@@ -14,6 +14,20 @@ job('MNTLAB-meremin-main-build-job') {
             }
         }
     }
+    steps {
+        downstreamParameterized {
+            trigger('$BUILD_TRIGGER') {
+				block {
+					buildStepFailure("FAILURE")
+					unstable("UNSTABLE")
+					failure("FAILURE")
+				}
+                parameters {
+                    predefinedProp('BRANCH_NAME', '$BRANCH_NAME')
+                }
+            }
+        }
+    }
 }
 
 
