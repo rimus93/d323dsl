@@ -2,7 +2,7 @@ job('MNTLAB-meremin-main-build-job') {
     description 'Main job'
     parameters {
     	choiceParam('BRANCH_NAME', ['meremin', 'master'], 'Branch name')
-        activeChoiceParam('BUILD_TRIGGER') {
+        activeChoiceParam(' MNTLAB-meremin-child1-build-job, MNTLAB-meremin-child2-build-job, MNTLAB-meremin-child3-build-job, MNTLAB-meremin-child4-build-job') {
             choiceType('CHECKBOX')
             groovyScript {
                 script('''return ["MNTLAB-meremin-child1-build-job", 
@@ -16,7 +16,7 @@ job('MNTLAB-meremin-main-build-job') {
     }
     steps {
         downstreamParameterized {
-            trigger('$BUILD_TRIGGER') {
+            trigger('MNTLAB-meremin-child1-build-job, MNTLAB-meremin-child2-build-job, MNTLAB-meremin-child3-build-job, MNTLAB-meremin-child4-build-job') {
 				block {
 					buildStepFailure("FAILURE")
 					unstable("UNSTABLE")
@@ -29,7 +29,6 @@ job('MNTLAB-meremin-main-build-job') {
         }
     }
 }
-
 for (i in 1..4) {
    job("MNTLAB-meremin-child${i}-build-job") {
      	scm {
@@ -46,16 +45,20 @@ for (i in 1..4) {
             }
     	}
         steps {
-            shell('''chmod +x script.sh
-                ./script.sh > output.txt
-tar -czvf ${BRANCH_NAME}_dsl_script.tar.gz jobs.groovy''')
+            shell('''
+chmod +x $WORKSPACE/script.sh
+$WORKSPACE/script.sh > $WORKSPACE/output.txt;
+name=$( echo $BRANCH_NAME | cut -d'/' -f2)
+tar -czvf "$name"_dsl_script.tar.gz -C $WORKSPACE jobs.groovy
+''')
         }
      	publishers {
 			archiveArtifacts {
-              pattern('${BRANCH_NAME}_dsl_script.tar.gz')
+              pattern('output.txt, *_dsl_script.tar.gz ')
             }
         }
      
     }  
 }
+
 
